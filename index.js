@@ -67,12 +67,27 @@ document.getElementById("vtt-generate").addEventListener("click", function() {
   // Update the textarea with the modified VTT content
   document.getElementById("vtt-plaintext").value = updatedVTT;
 
-  // document.getElementById("vtt-copy-plain").onclick = function() {
-  //   navigator.clipboard.writeText(sanitizedVTT);
-  //   alert("Sanitized VTT copied to clipboard!");
-  // };
+  // Enable the download buttons and remove inline styles
+  const txtDownloadBtn = document.getElementById("txt-download");
+  const vttCopyBtn = document.getElementById("vtt-copy-plain");
+  const vttDownloadBtn = document.getElementById("vtt-download");
 
-  document.getElementById("txt-download").onclick = function() {
+  txtDownloadBtn.disabled = false;
+  vttCopyBtn.disabled = false;
+  vttDownloadBtn.disabled = false;
+  txtDownloadBtn.style.opacity = "1";
+  txtDownloadBtn.style.cursor = "pointer";
+  vttCopyBtn.style.opacity = "1";
+  vttCopyBtn.style.cursor = "pointer";
+  vttDownloadBtn.style.opacity = "1";
+  vttDownloadBtn.style.cursor = "pointer";
+
+  document.getElementById("vtt-copy-plain").onclick = function() {
+    navigator.clipboard.writeText(sanitizedVTT);
+    alert("Sanitized VTT copied to clipboard!");
+  };
+
+  txtDownloadBtn.onclick = function() {
     const blob = new Blob([sanitizedVTT], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -82,7 +97,7 @@ document.getElementById("vtt-generate").addEventListener("click", function() {
     URL.revokeObjectURL(url);
   };
 
-  document.getElementById("vtt-download").onclick = function() {
+  vttDownloadBtn.onclick = function() {
     const blob = new Blob([updatedVTT], { type: "text/vtt" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -92,3 +107,28 @@ document.getElementById("vtt-generate").addEventListener("click", function() {
     URL.revokeObjectURL(url);
   };
 });
+
+// Function to disable download buttons and apply inline styles
+function disableDownloadButtons() {
+  const txtDownloadBtn = document.getElementById("txt-download");
+  const txtCopyBtn = document.getElementById("vtt-copy-plain");
+  const vttDownloadBtn = document.getElementById("vtt-download");
+
+  txtDownloadBtn.disabled = true;
+  txtCopyBtn.disabled = true;
+  vttDownloadBtn.disabled = true;
+  txtDownloadBtn.style.opacity = "0.5";
+  txtDownloadBtn.style.cursor = "not-allowed";
+  txtCopyBtn.style.opacity = "0.5";
+  txtCopyBtn.style.cursor = "not-allowed";
+  vttDownloadBtn.style.opacity = "0.5";
+  vttDownloadBtn.style.cursor = "not-allowed";
+}
+
+disableDownloadButtons();
+
+// Add event listeners to inputs to disable buttons when changed
+document.getElementById("vtt-plaintext").addEventListener("input", disableDownloadButtons);
+document.getElementById("vtt-seconds").addEventListener("input", disableDownloadButtons);
+document.getElementById("vtt-block").addEventListener("input", disableDownloadButtons);
+document.getElementById("vtt-filename").addEventListener("input", disableDownloadButtons);
