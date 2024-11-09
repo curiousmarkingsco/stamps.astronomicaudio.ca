@@ -108,6 +108,15 @@ document.getElementById("vtt-generate").addEventListener("click", function() {
   };
 });
 
+function toggleAddSubtractState() {
+  const stateElement = document.getElementById('addsubtract-button-state');
+  const truthiness = stateElement.getAttribute('data-state');
+  const newTruth = truthiness === 'Subtract' ? 'Add' : 'Subtract';
+  stateElement.setAttribute('data-state', newTruth);
+  document.getElementById('vtt-addsubtract').value = newTruth;
+  document.getElementById('addsubtract-label').innerHTML = `${newTruth} time from the beginning block.`
+}
+
 // Function to disable download buttons and apply inline styles
 function disableDownloadButtons() {
   const txtDownloadBtn = document.getElementById("txt-download");
