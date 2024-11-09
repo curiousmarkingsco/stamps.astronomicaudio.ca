@@ -50,15 +50,55 @@ document.getElementById("vtt-generate").addEventListener("click", function() {
 
   function sanitizeVTT(vttContent) {
     const lines = vttContent.split("\n");
+    let lastSpeaker = "";
+  
     return lines
-      .map(line => {
+      .filter(line => isNaN(line.trim())) // Remove block numbers
+      .map((line, index) => {
         if (line.includes("-->")) {
+          // Extract and format the timestamp
           const [start] = line.split(" --> ");
-          return start;
+          const formattedStart = formatTimestamp(start);
+          return formattedStart;
         }
+  
+        if (line.trim().endsWith(":")) {
+          // If it's a speaker's name, update the lastSpeaker variable
+          lastSpeaker = line.trim();
+          return `${lastSpeaker}`;
+        }
+
+        if (line.trim() && lines[index - 1].includes("-->")) {
+          // If it's text directly following a timestamp, format the output with the speaker's name and timestamp
+          const timestamp = lines[index - 1];
+          if (timestamp && !timestamp.includes("-->")) {
+            return `${lastSpeaker}\n${timestamp}\n${line}`;
+          }
+        }
+  
+        if (line.trim() && !lines[index - 1].includes("-->")) {
+          // If it's a text block not directly following a timestamp, maintain the last speaker and move the timestamp
+          return `${lastSpeaker}\n${line}`;
+        }
+  
+        // Return the line if it's empty or doesn't match the conditions
         return line;
       })
+      .filter(line => line.trim() !== "") // Remove empty lines
       .join("\n");
+  }
+  
+  function formatTimestamp(timestamp) {
+    // Normalize the timestamp by replacing periods with commas and removing milliseconds
+    timestamp = timestamp.replace(/\./g, ',');
+    let [hours, minutes, seconds] = timestamp.split(":");
+    seconds = seconds.split(",")[0]; // Remove milliseconds
+  
+    if (parseInt(hours, 10) === 0) {
+      return `${minutes}:${seconds}`;
+    }
+  
+    return `${parseInt(hours, 10)}:${minutes}:${seconds}`;
   }
 
   const updatedVTT = updateVTTTimestamps(vttContent, seconds, block);
