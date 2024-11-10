@@ -67,12 +67,12 @@
                                 Number of
                                 Seconds<span class="sr-only"></span></h2>
                             </div>
-                            <div>
-                              <button type="button" onclick="toggleAddSubtractState();" class="group-anim-click:f9hwe8 group-anim:f9hwe8 from-anim:bg-gray-200 to-anim:bg-goldenrod-100 bg-gray-200 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-goldenrod-600 focus:ring-offset-2" role="switch" aria-checked="false">
+                            <div class="flex items-center">
+                              <button type="button" onclick="toggleAddSubtractState();" class="group-anim-click:f9hwe8 group-anim:f9hwe8 my-1 from-anim:bg-gray-200 to-anim:bg-goldenrod-100 bg-gray-200 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-goldenrod-600 focus:ring-offset-2" role="switch" aria-checked="false">
                                 <span class="sr-only">Add or Subtract</span>
-                                <span aria-hidden="true" data-state="Subtract" id="addsubtract-button-state" class="group-anim:f9hwe8 from-anim:translate-x-0 to-anim:translate-x-5 translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-goldenrod-500 shadow ring-0 transition duration-200 ease-in-out"></span>
+                                <span aria-hidden="true" data-state="Subtract" id="addsubtract-button-state" class="group-anim:f9hwe8 from-anim:translate-x-0 to-anim:translate-x-5 translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-goldenrod-500 shadow ring-0 transition duration-200 ease-in-out text-goldenrod-50 flex items-center justify-center">-</span>
                               </button>
-                              <div class="inline-block text-woodsmoke-500 p-1 text-right" id="addsubtract-label">Subtract time from the beginning block.</div>
+                              <div class="inline-block text-woodsmoke-500 my-auto ml-4 text-right" id="addsubtract-label">Subtract time starting at the beginning block.</div>
                               <input type="hidden" aria-label="Add or Subtract Seconds" id="vtt-addsubtract" value="subtract">
                             </div>
                           </div>

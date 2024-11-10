@@ -1,4 +1,4 @@
-document.getElementById("vtt-generate").addEventListener("click", function() {
+document.getElementById("vtt-generate").addEventListener("click", function () {
   const vttContent = document.getElementById("vtt-plaintext").value;
   const seconds = parseFloat(document.getElementById("vtt-seconds").value);
   const block = parseInt(document.getElementById("vtt-block").value, 10);
@@ -8,6 +8,8 @@ document.getElementById("vtt-generate").addEventListener("click", function() {
     const lines = vttContent.split("\n");
     let currentBlock = 0;
     let inBlock = false;
+    // 'add' or 'subtract'
+    const arithmeType = document.getElementById('vtt-addsubtract').value;
 
     function timestampToSeconds(timestamp) {
       const parts = timestamp.split(":");
@@ -39,8 +41,17 @@ document.getElementById("vtt-generate").addEventListener("click", function() {
 
       if (inBlock && line.includes("-->")) {
         const [start, end] = line.split(" --> ");
-        const newStart = Math.max(0, timestampToSeconds(start) - seconds);
-        const newEnd = Math.max(0, timestampToSeconds(end) - seconds);
+
+        // Determine operation based on `arithmeType`
+        const adjustTime = (time) => {
+          return arithmeType === 'Add'
+            ? time + seconds
+            : Math.max(0, time - seconds);
+        };
+
+        const newStart = adjustTime(timestampToSeconds(start));
+        const newEnd = adjustTime(timestampToSeconds(end));
+
         lines[i] = `${secondsToTimestamp(newStart)} --> ${secondsToTimestamp(newEnd)}`;
       }
     }
@@ -48,57 +59,69 @@ document.getElementById("vtt-generate").addEventListener("click", function() {
     return lines.join("\n");
   }
 
-  function sanitizeVTT(vttContent) {
-    const lines = vttContent.split("\n");
-    let lastSpeaker = "";
-  
-    return lines
-      .filter(line => isNaN(line.trim())) // Remove block numbers
-      .map((line, index) => {
-        if (line.includes("-->")) {
-          // Extract and format the timestamp
-          const [start] = line.split(" --> ");
-          const formattedStart = formatTimestamp(start);
-          return formattedStart;
-        }
-  
-        if (line.trim().endsWith(":")) {
-          // If it's a speaker's name, update the lastSpeaker variable
-          lastSpeaker = line.trim();
-          return `${lastSpeaker}`;
-        }
 
-        if (line.trim() && lines[index - 1].includes("-->")) {
-          // If it's text directly following a timestamp, format the output with the speaker's name and timestamp
-          const timestamp = lines[index - 1];
-          if (timestamp && !timestamp.includes("-->")) {
-            return `${lastSpeaker}\n${timestamp}\n${line}`;
-          }
+  function sanitizeVTT(inputText) {
+    const lines = inputText.split('\n');
+    let currentSpeaker = ''; // Keeps track of the last speaker
+    let blockNumber = 0;
+    let result = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+
+      // Skip empty lines or lines with just the block number
+      if (!line || /^\d+$/.test(line)) {
+        if (/^\d+$/.test(line)) {
+          blockNumber = line; // Store block number
+          if (line === `${blockNumber}`) result.push(line)
+          continue;
+        } else {
+          continue;
         }
-  
-        if (line.trim() && !lines[index - 1].includes("-->")) {
-          // If it's a text block not directly following a timestamp, maintain the last speaker and move the timestamp
-          return `${lastSpeaker}\n${line}`;
+      }
+
+      let newSpeaker = '';
+      const speakerMatch = line.match(/^(.+?):$/);
+      if (speakerMatch) {
+        newSpeaker = speakerMatch[1].trim();
+        if (newSpeaker !== currentSpeaker) {
+          currentSpeaker = newSpeaker; // Update speaker only if it changes
         }
-  
-        // Return the line if it's empty or doesn't match the conditions
-        return line;
-      })
-      .filter(line => line.trim() !== "") // Remove empty lines
-      .join("\n");
-  }
-  
-  function formatTimestamp(timestamp) {
-    // Normalize the timestamp by replacing periods with commas and removing milliseconds
-    timestamp = timestamp.replace(/\./g, ',');
-    let [hours, minutes, seconds] = timestamp.split(":");
-    seconds = seconds.split(",")[0]; // Remove milliseconds
-  
-    if (parseInt(hours, 10) === 0) {
-      return `${minutes}:${seconds}`;
+      }
+
+      const matchedLine = result.findIndex(item => item === `${blockNumber}`);
+      if (matchedLine !== -1) {
+        if (newSpeaker !== '') {
+          result[matchedLine] = `${newSpeaker}:`;
+        } else if (currentSpeaker !== '') {
+          result[matchedLine] = `${currentSpeaker}:`;
+        }
+      }
+
+      // Check if the line is a timestamp
+      if (line.includes('-->')) {
+        // Extract the start timestamp, remove milliseconds, and reformat
+        let [start] = line.split(' --> ');
+        start = start.split(/[.,]/)[0]; // Remove milliseconds and handle both ',' and '.'
+
+        // Remove "00:" if present at the beginning
+        start = start.replace(/^00:/, '');
+
+        // Add the speaker before the timestamp only if it changes
+        if (currentSpeaker) {
+          result.push(`${start}`);
+        } else {
+          result.push(`${start}`);
+        }
+      } else if (line === `${newSpeaker}:`) {
+        continue;
+      } else {
+        // Regular text line, append to the result with the current speaker or block number
+        result.push(`${line}\n`);
+      }
     }
-  
-    return `${parseInt(hours, 10)}:${minutes}:${seconds}`;
+
+    return result.join('\n');
   }
 
   const updatedVTT = updateVTTTimestamps(vttContent, seconds, block);
@@ -122,12 +145,12 @@ document.getElementById("vtt-generate").addEventListener("click", function() {
   vttDownloadBtn.style.opacity = "1";
   vttDownloadBtn.style.cursor = "pointer";
 
-  document.getElementById("vtt-copy-plain").onclick = function() {
+  document.getElementById("vtt-copy-plain").onclick = function () {
     navigator.clipboard.writeText(sanitizedVTT);
     alert("Sanitized VTT copied to clipboard!");
   };
 
-  txtDownloadBtn.onclick = function() {
+  txtDownloadBtn.onclick = function () {
     const blob = new Blob([sanitizedVTT], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -137,7 +160,7 @@ document.getElementById("vtt-generate").addEventListener("click", function() {
     URL.revokeObjectURL(url);
   };
 
-  vttDownloadBtn.onclick = function() {
+  vttDownloadBtn.onclick = function () {
     const blob = new Blob([updatedVTT], { type: "text/vtt" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -154,7 +177,8 @@ function toggleAddSubtractState() {
   const newTruth = truthiness === 'Subtract' ? 'Add' : 'Subtract';
   stateElement.setAttribute('data-state', newTruth);
   document.getElementById('vtt-addsubtract').value = newTruth;
-  document.getElementById('addsubtract-label').innerHTML = `${newTruth} time from the beginning block.`
+  stateElement.innerHTML = newTruth === 'Subtract' ? '-' : '+';
+  document.getElementById('addsubtract-label').innerHTML = `${newTruth} time starting at the beginning block.`
 }
 
 // Function to disable download buttons and apply inline styles
