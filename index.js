@@ -84,8 +84,9 @@ document.getElementById("vtt-generate").addEventListener("click", function () {
       // Skip empty lines or lines with just the block number
       if (!line || /^\d+$/.test(line)) {
         if (/^\d+$/.test(line)) {
+          console.log(line)
           blockNumber = line; // Store block number
-          if (line === `${blockNumber}`) result.push(line)
+          // if (parseInt(line) === blockNumber) result.push(line)
           continue;
         } else {
           continue;
@@ -121,15 +122,15 @@ document.getElementById("vtt-generate").addEventListener("click", function () {
 
         // Add the speaker before the timestamp only if it changes
         if (currentSpeaker) {
-          result.push(`${start}`);
+          result.push(`\n${start}`);
         } else {
-          result.push(`${start}`);
+          result.push(`\n${start}`);
         }
       } else if (line === `${newSpeaker}:`) {
-        continue;
+        result.push(`${newSpeaker}:`);
       } else {
         // Regular text line, append to the result with the current speaker or block number
-        result.push(`${line}\n`);
+        result.push(`${line}`);
       }
     }
 
@@ -224,11 +225,6 @@ document.getElementById("vtt-seconds").addEventListener("input", disableDownload
 document.getElementById("vtt-minutes").addEventListener("input", disableDownloadButtons);
 document.getElementById("vtt-block").addEventListener("input", disableDownloadButtons);
 document.getElementById("vtt-filename").addEventListener("input", disableDownloadButtons);
-
-
-// ------------------------------------------
-// NEW: Logic for auto-populating the new time & auto-updating min/sec
-// ------------------------------------------
 
 // We’ll store the old block time so we can compute differences easily.
 let oldBlockTimeInSeconds = 0;
